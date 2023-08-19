@@ -45,6 +45,7 @@ public class ValidationItemControllerV1 {
     // 실제 저장
     @PostMapping("/add")
     public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes, Model model) {
+        // @ModelAttribute Item item는 model.addAttribute("item", item);이 자동으로 들어간다.
 
         // 검증 실패 시 뭐가 실패했는지 알려주기 위해서 Model에 검증 오류 결과가 포함되어야 한다.
         // 검증 오류 결과를 보관
