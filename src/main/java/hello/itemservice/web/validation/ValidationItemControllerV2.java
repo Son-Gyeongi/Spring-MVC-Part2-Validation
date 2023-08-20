@@ -160,8 +160,8 @@ public class ValidationItemControllerV2 {
         redirectAttributes.addAttribute("status", true);
         return "redirect:/validation/v2/items/{itemId}";
     }
-    // 오류 코드와 메시지 처리
-    @PostMapping("/add")
+    // 오류 코드와 메시지 처리1
+//    @PostMapping("/add")
     public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         // @ModelAttribute Item item는 model.addAttribute("item", item);이 자동으로 들어간다.
 
@@ -200,6 +200,62 @@ public class ValidationItemControllerV2 {
 //                errors.put("globalError", "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재 값 = " + resultPrice);
                 bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"},
                         new Object[]{10000, resultPrice}, null));
+            }
+        }
+
+        // 검증에 실패하면 다시 입력 폼으로 이동
+//        if (!errors.isEmpty()) { // 에러가 있다면
+        if (bindingResult.hasErrors()) { // 에러가 있다면
+            log.info("errors = {}", bindingResult);
+            // BindingResult는 자동으로 뷰에 같이 넘어가서 modelAttribute에 안 담아도 된다.
+//            model.addAttribute("errors", errors);
+            return "validation/v2/addForm"; // 입력폼 뷰로 넘어간다.
+        }
+
+        // 성공 로직
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+    // 오류 코드와 메시지 처리2 - rejectValue() , reject() 를 사용해서 기존 코드를 단순화해보자.
+    // reject()는 object 이고 rejectValue()는 field이다.
+    @PostMapping("/add")
+    public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        // @ModelAttribute Item item는 model.addAttribute("item", item);이 자동으로 들어간다.
+
+        log.info("objectName = {}", bindingResult.getObjectName()); // item
+        log.info("target={}", bindingResult.getTarget()); // item객체가 들어있다.
+
+        // 검증 로직
+        // 상품명 필드 오류 시 (필드 오류 검증)
+        if (!StringUtils.hasText(item.getItemName())) { // 글자가 없으면, hasText: 글자가 있는가
+//            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, new String[]{"required.item.itemName"}, null, null));
+            // bindingResult는 이미 objectName("item")을 알고 있다.
+            bindingResult.rejectValue("itemName", "required");
+        }
+        // 상품가격 필드 오류 시
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+            // 상품 가격이 없거나 천원 미만이거나 백만원 초과인 경우
+//            bindingResult.addError(new FieldError("item", "price",item.getPrice(), false, new String[]{"range.item.price"}, new Object[]{1000, 1000000}, null));
+            bindingResult.rejectValue("price", "range", new Object[]{1000, 1000000}, null);
+        }
+        // 상품수량 필드 오류 시
+        if (item.getQuantity() == null || item.getQuantity() >= 9999) {
+            // 수량이 없거나 9999개 넘는 경우
+//            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(), false, new String[]{"max.item.quantity"}, new Object[]{9999}, null));
+            bindingResult.rejectValue("quantity", "max", new Object[]{9999}, null);
+        }
+
+        // 특정 필드의 범위를 넘어서는 검증 - 가격 * 수량의 합은 10,000원 이상
+        // 특정 필드가 아닌 복합 룰 검증 (복합 룰 검증)
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            // 가격, 수량 둘 다 null이 아니어야 한다.
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) { // 가격*수량의 가격이 10,000원 미만이면 오류가 난다.
+//                bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"}, new Object[]{10000, resultPrice}, null));
+                // bindingResult는 이미 objectName("item")을 알고 있다.
+                bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
             }
         }
 
