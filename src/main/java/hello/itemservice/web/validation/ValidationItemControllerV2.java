@@ -263,7 +263,7 @@ public class ValidationItemControllerV2 {
             }
         }
 
-        // 검증에 실패하면 다시 입력 폼으로 이동
+        // 검증에 실패하면 다시 입력 폼으로 이동, binding 실패 시
 //        if (!errors.isEmpty()) { // 에러가 있다면
         if (bindingResult.hasErrors()) { // 에러가 있다면
             log.info("errors = {}", bindingResult);
