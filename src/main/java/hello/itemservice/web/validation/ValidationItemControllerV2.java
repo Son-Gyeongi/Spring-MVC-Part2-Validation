@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.ValidationUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -234,6 +235,9 @@ public class ValidationItemControllerV2 {
             // bindingResult는 이미 objectName("item")을 알고 있다.
             bindingResult.rejectValue("itemName", "required");
         }
+//        위와 같은 코드를 나타낼 수 있는 유틸리티 - 제공하는 기능은 Empty , 공백 같은 단순한 기능만 제공
+//        ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required");
+
         // 상품가격 필드 오류 시
         if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
             // 상품 가격이 없거나 천원 미만이거나 백만원 초과인 경우
