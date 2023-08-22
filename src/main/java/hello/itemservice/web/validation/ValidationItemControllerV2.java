@@ -24,7 +24,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ValidationItemControllerV2 {
 
+    // 스프링에서 빈 주입
     private final ItemRepository itemRepository;
+    private final ItemValidator itemValidator;
 
     @GetMapping
     public String items(Model model) {
@@ -221,7 +223,7 @@ public class ValidationItemControllerV2 {
     }
     // 오류 코드와 메시지 처리2 - rejectValue() , reject() 를 사용해서 기존 코드를 단순화해보자.
     // reject()는 object 이고 rejectValue()는 field이다.
-    @PostMapping("/add")
+//    @PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         // @ModelAttribute Item item는 model.addAttribute("item", item);이 자동으로 들어간다.
 
@@ -262,6 +264,30 @@ public class ValidationItemControllerV2 {
                 bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
             }
         }
+
+        // 검증에 실패하면 다시 입력 폼으로 이동, binding 실패 시
+//        if (!errors.isEmpty()) { // 에러가 있다면
+        if (bindingResult.hasErrors()) { // 에러가 있다면
+            log.info("errors = {}", bindingResult);
+            // BindingResult는 자동으로 뷰에 같이 넘어가서 modelAttribute에 안 담아도 된다.
+//            model.addAttribute("errors", errors);
+            return "validation/v2/addForm"; // 입력폼 뷰로 넘어간다.
+        }
+
+        // 성공 로직
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    // Validation 분리1
+    @PostMapping("/add")
+    public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        // @ModelAttribute Item item는 model.addAttribute("item", item);이 자동으로 들어간다.
+
+        // 검증기
+        itemValidator.validate(item, bindingResult);
 
         // 검증에 실패하면 다시 입력 폼으로 이동, binding 실패 시
 //        if (!errors.isEmpty()) { // 에러가 있다면
