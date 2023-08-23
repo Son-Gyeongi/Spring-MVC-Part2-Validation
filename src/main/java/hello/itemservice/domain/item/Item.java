@@ -13,6 +13,7 @@ public class Item {
     private Long id;
 
     @NotBlank // 빈값 + 공백만 있는 경우를 허용하지 않는다.
+//    @NotBlank(message = "공백 X") // 오류가 났을 때 메시지를 직접 쓸 수 있다.
     private String itemName;
 
     @NotNull // null 을 허용하지 않는다.
