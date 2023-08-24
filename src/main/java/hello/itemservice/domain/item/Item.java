@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 // @ScriptAssert - Bean Validation에서 특정 필드( FieldError )가 아닌 해당 오브젝트 관련 오류( ObjectError ) 처리, 권장X
 public class Item {
 
+    @NotNull // 수정 요구사항 추가
     private Long id;
 
     @NotBlank // 빈값 + 공백만 있는 경우를 허용하지 않는다.
@@ -23,7 +24,7 @@ public class Item {
     private Integer price;
 
     @NotNull
-    @Max(9999) // 최대 9999까지만 허용한다.
+//    @Max(9999) // 최대 9999까지만 허용한다. 수정 요구사항 추가
     private Integer quantity;
 
     public Item() {
